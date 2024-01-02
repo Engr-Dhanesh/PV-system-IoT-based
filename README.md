@@ -1,2 +1,1 @@
-# PV-system-IoT-based
-Photovoltaic System using IoT code 
+# Photovoltaic System using IoT code 
