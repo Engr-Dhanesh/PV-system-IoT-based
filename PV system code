@@ -1,0 +1,89 @@
+//int offsetvoltage = 2545; // like this use can set if needed
+#define sensorPin 34// sensorpin connection for current sensor 
+#define LDRPIN 33// LDR data pin connection to esp32
+#define BLYNK_TEMPLATE_ID "**************** "// user template id of blynk iot 
+#define BLYNK_TEMPLATE_NAME "PV system"// user template name of blynk iot 
+#define BLYNK_AUTH_TOKEN "***************** "// user auth token of blynk iot 
+#define BLYNK_PRINT Serial// define blynk_print serial for access
+#include <WiFi.h>//to include wifi library
+#include <BlynkSimpleEsp32.h>//include library to use blynk on esp32
+#include <DHT.h>//include Temperature and humidity library
+const char* ssid = "Dhanesh "; // type your Wi-Fi name
+const char* pass = "******"; // type your Wi-Fi password
+BlynkTimer timer; //for blynk timing
+#define DHTPIN 4 //Connect Out pin to D4 in NODEMCU(Esp32)
+#define DHTTYPE DHT11 //defining the DHT11 Type
+DHT dht(DHTPIN, DHTTYPE); // pin and type declaring
+void sendSensor()// loop for sensors
+{
+int sensorValue = analogRead(32);// sensorValue reading from esp32 pin 32
+float vol = (sensorValue * 5.0) / 4096;// calulating and assiging value in vol 
+variable
+float voltage = vol * 5.0;// calulating and assiging value in new voltage 
+variable
+int sensorValue1 = analogRead(sensorPin);//to read and assign current value in 
+sensorValue1 variable
+float current = sensorValue1 * (3.0 / 2045.0); // Assuming 3V ADC reference 
+voltage
+current = ((current / 5)); // Adjust the scaling factor for your sensor
+if (voltage==1.8) { // used a condition for current value using value of 
+voltage
+current = 100;
+}
+else if(voltage==1.9) { // condition second
+current = 150;
+}
+else if(voltage>2){// third condition
+current = 200;
+}
+else {
+current = 0; // final condtion
+}
+float h = dht.readHumidity();// read humidity and store it in h variable
+float t = dht.readTemperature(); // read temperature and store it in t variable
+if (isnan(h) || isnan(t)) { // condition for h and t
+Serial.println("Failed to read from DHT sensor!");// print this if sensor 
+failed to read value
+9 | P a g e
+PV SYSTEM DATA
+return;
+Blynk.run();// run blynk
+}
+Serial.println(" ");
+Serial.println("PV System by Dhanesh Kumar & The LeGend MJ!");
+int val = analogRead(LDRPIN);// ldr value read and assign in val variale
+Serial.print("Humidity: ");// serial print the string Humidity:
+Serial.print(h);// print the value of humidity
+Serial.println(" %\t");//print unit for humidity
+Serial.print("Temperature: ");//print string Temperature:
+Serial.print(t);// print temperature
+Serial.println("°C");// print uni of temperature
+Serial.print("LDR Value: ");// print string LDR value:
+Serial.print(val);//print value of ldr
+Serial.println("%");// print unit of ldr
+Serial.print("Voltage = ");//print string voltage =
+Serial.print(voltage);// print the value of voltage
+Serial.println("V");//print the unit of voltage
+Serial.print("Current: ");//print string Current:
+Serial.print(current, 2); // Print value with 2 decimal places
+Serial.println("mA");//print unit of current
+delay(1000); //delay
+Blynk.virtualWrite(V1, h); // Send humidity data to V1 widget
+Blynk.virtualWrite(V0, t); // Send temperature data to V0 widget
+Blynk.virtualWrite(V2, voltage); // Send voltage data to V2 widget
+Blynk.virtualWrite(V3, val); // Send LDR value to V3 widget
+Blynk.virtualWrite(V4, current); // send Current data to V4 widget
+delay(5000); // Adjust the delay as needed for your application
+}
+void setup()
+{
+Serial.begin(115200);// for serial communication
+Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);// blynk read data
+dht.begin();
+timer.setInterval(100L, sendSensor);//time interval
+}
+void loop()// continue running
+{
+Blynk.run();//blynk running
+timer.run();//time running
+}
